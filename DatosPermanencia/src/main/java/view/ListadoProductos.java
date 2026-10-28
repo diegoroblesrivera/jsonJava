@@ -11,6 +11,8 @@ import javax.swing.table.DefaultTableModel;
 import model.Producto;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -25,12 +27,7 @@ public class ListadoProductos extends javax.swing.JFrame {
      */
     public ListadoProductos() {
         initComponents();
-        Producto p1=new Producto("Papa", 2000, 6);
-        Producto p2=new Producto("mayo", 2200, 16);
-        Producto p3=new Producto("Mostaza", 1700, 8);
-        productos.add(p1);
-        productos.add(p2);
-        productos.add(p3);
+
         // Asignar el escuchador de cambios a la tabla
     TablaProductos.getModel().addTableModelListener(new TableModelListener() {
         @Override
@@ -75,12 +72,13 @@ public class ListadoProductos extends javax.swing.JFrame {
     });
         
       
-        creaJson();
+
+        cargaDatosJson();
         cargarDatosTabla(productos);
     }
     
     public void creaJson(){
-            // Conversión directa a JSON string
+            
         Gson gson = new Gson();
         String jsonText = gson.toJson(productos);
 
@@ -99,7 +97,28 @@ public class ListadoProductos extends javax.swing.JFrame {
                 
              
     }
-        
+      
+    public void cargaDatosJson(){
+    String nombreArchivo = "productos.json";
+
+    try (FileReader reader = new FileReader(nombreArchivo)) {
+        Gson gson = new Gson();
+
+        // 1. Definir el tipo exacto de la lista (ej: ArrayList de Producto)
+        // Reemplaza "Producto" por el nombre exacto de tu clase
+        java.lang.reflect.Type tipoLista = new TypeToken<ArrayList<Producto>>(){}.getType();
+
+        // 2. Leer el archivo y transformar el JSON de vuelta al ArrayList
+        productos = gson.fromJson(reader, tipoLista);
+
+        System.out.println("¡ArrayList actualizado con éxito desde el archivo JSON!");
+
+    } catch (IOException e) {
+        System.out.println("Error al leer el archivo: " + e.getMessage());
+        e.printStackTrace();
+    }
+        }
+    
     public void cargarDatosTabla(ArrayList<Producto> listaProductos) {
     // 1. Obtener el modelo predeterminado de la JTable y castearlo a DefaultTableModel
     DefaultTableModel modelo = (DefaultTableModel) TablaProductos.getModel();
@@ -181,6 +200,11 @@ public class ListadoProductos extends javax.swing.JFrame {
         });
 
         editar.setText("Actualizar");
+        editar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editarActionPerformed(evt);
+            }
+        });
 
         eliminar.setText("Eliminar");
         eliminar.addActionListener(new java.awt.event.ActionListener() {
@@ -258,6 +282,7 @@ public class ListadoProductos extends javax.swing.JFrame {
         Producto prod1=new Producto(n, pre, cant);
         productos.add(prod1);
         cargarDatosTabla(productos);
+        creaJson();
         
         
         
@@ -267,9 +292,15 @@ public class ListadoProductos extends javax.swing.JFrame {
         // TODO add your handling code here:
         productos.remove(TablaProductos.getSelectedRow());
         cargarDatosTabla(productos);
+        creaJson();
         
     }//GEN-LAST:event_eliminarActionPerformed
 
+    private void editarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarActionPerformed
+        // TODO add your handling code here:
+        creaJson();
+    }//GEN-LAST:event_editarActionPerformed
+    
     /**
      * @param args the command line arguments
      */
